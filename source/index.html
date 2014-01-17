@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="index.css" />
+        <script type="text/javascript" src="../lib/require.js"></script>
+        <script type="text/javascript">
+            requirejs.config({
+                baseUrl : './'
+            });
+
+            require(['Electrocardiogram'], function(Electrocardiogram) {
+                var ecg = new Electrocardiogram({
+                    size : {
+                        width : document.body.offsetWidth,
+                        height : document.body.offsetHeight,
+                    },
+                    grid : {
+                        size : 5,
+                        color : 'pink',
+                    }
+                });
+
+                ecg.drawGrid();
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
