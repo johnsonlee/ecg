@@ -8,18 +8,27 @@
             });
 
             require(['Electrocardiogram'], function(Electrocardiogram) {
-                var ecg = new Electrocardiogram({
-                    size : {
-                        width : document.body.offsetWidth,
-                        height : document.body.offsetHeight,
-                    },
-                    grid : {
-                        size : 5,
-                        color : 'pink',
+                var ecg = new Electrocardiogram(
+                        document.body.offsetWidth,
+                        document.body.offsetHeight);
+
+                require(['text!../resource/ecg.json'], function(json) {
+                    var n = Math.round(ecg.getWidth() / Electrocardiogram.CELL_SIZE);
+
+                    try {
+                        var data = JSON.parse(json);
+                        var timer = window.setInterval(function() {
+                            if (data.length) {
+                                ecg.drawCurve(data.slice(0, n));
+                                data.shift();
+                            } else {
+                                window.clearInterval(timer);
+                            }
+                        }, 500);
+                    } catch (e) {
+                        console.error(e.stack);
                     }
                 });
-
-                ecg.drawGrid();
             });
         </script>
     </head>
