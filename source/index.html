@@ -8,15 +8,22 @@
             });
 
             require(['Electrocardiogram'], function(Electrocardiogram) {
-                var ecg = new Electrocardiogram(
-                        document.body.offsetWidth,
-                        document.body.offsetHeight);
+                var ecg = new Electrocardiogram(document.body);
 
                 require(['text!../resource/ecg.json'], function(json) {
                     var n = Math.round(ecg.getWidth() / Electrocardiogram.CELL_SIZE);
 
                     try {
-                        var data = JSON.parse(json);
+                        var data = (function(s) {
+                            var arr = JSON.parse(s);
+
+                            for (var i = 0; i < n - 1; i++) {
+                                arr.unshift(null);
+                            }
+
+                            return arr;
+                        })(json);
+
                         var timer = window.setInterval(function() {
                             if (data.length) {
                                 ecg.drawCurve(data.slice(0, n));
@@ -24,9 +31,9 @@
                             } else {
                                 window.clearInterval(timer);
                             }
-                        }, 500);
+                        }, Electrocardiogram.FREQUENCY);
                     } catch (e) {
-                        console.error(e.stack);
+                        console.error(e.message);
                     }
                 });
             });
