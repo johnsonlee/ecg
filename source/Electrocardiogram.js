@@ -119,16 +119,16 @@ define(function(require, exports, module) {
         this.drawGrid = function() {
             var x = 0;
             var y = 0;
-            var w = this.getWidth();
-            var h = this.getHeight();
+            var w = this.getWidth() - 1;
+            var h = this.getHeight() - 1;
             var lw = this.$graphics.lineWidth;
             var ss = this.$graphics.strokeStyle;
 
             this.$graphics.strokeStyle = this.$gridColor;
 
-            for (var y = 0; y < h; y += Electrocardiogram.CELL_SIZE) {
+            for (var y = h; y >= 0; y -= Electrocardiogram.CELL_SIZE) {
                 this.$graphics.beginPath();
-                this.$graphics.lineWidth = (y % Electrocardiogram.BLOCK_SIZE)
+                this.$graphics.lineWidth = ((h - y) % Electrocardiogram.BLOCK_SIZE)
                         ? Electrocardiogram.CELL_WIDTH 
                         : Electrocardiogram.BLOCK_WIDTH;
                 this.drawLine(0, y, w, y);
@@ -136,7 +136,7 @@ define(function(require, exports, module) {
                 this.$graphics.stroke();
             }
 
-            for (var x = 0; x < w; x += Electrocardiogram.CELL_SIZE) {
+            for (var x = 0; x <= w; x += Electrocardiogram.CELL_SIZE) {
                 this.$graphics.beginPath();
                 this.$graphics.lineWidth = (x % Electrocardiogram.BLOCK_SIZE)
                         ? Electrocardiogram.CELL_WIDTH
