@@ -9,32 +9,27 @@
 
             require(['Electrocardiogram'], function(Electrocardiogram) {
                 var ecg = new Electrocardiogram(document.body);
+                var ncell = Math.round(ecg.getWidth() / Electrocardiogram.CELL_SIZE);
 
-                require(['text!../resource/ecg.json'], function(json) {
-                    var n = Math.round(ecg.getWidth() / Electrocardiogram.CELL_SIZE);
+                require(['Assets'], function(Assets) {
+                    var data = (function() {
+                        var pqrst = Assets.data['PQRST'].slice();
 
-                    try {
-                        var data = (function(s) {
-                            var arr = JSON.parse(s);
+                        for (var i = 0; i < ncell - 1; i++) {
+                            pqrst.unshift(null);
+                        }
 
-                            for (var i = 0; i < n - 1; i++) {
-                                arr.unshift(null);
-                            }
+                        return pqrst;
+                    })();
 
-                            return arr;
-                        })(json);
-
-                        var timer = window.setInterval(function() {
-                            if (data.length) {
-                                ecg.drawCurve(data.slice(0, n));
-                                data.shift();
-                            } else {
-                                window.clearInterval(timer);
-                            }
-                        }, Electrocardiogram.FREQUENCY);
-                    } catch (e) {
-                        console.error(e.message);
-                    }
+                    var timer = window.setInterval(function() {
+                        if (data.length) {
+                            ecg.drawCurve(data.slice(0, ncell));
+                            data.shift();
+                        } else {
+                            window.clearInterval(timer);
+                        }
+                    }, Electrocardiogram.FREQUENCY);
                 });
             });
         </script>
