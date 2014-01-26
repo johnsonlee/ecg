@@ -1,7 +1,12 @@
 define(function(require, exports, module) {
 
     /**
+     * Electrocardiogram
      * 
+     * @param holder
+     *           HTML element
+     * @param option
+     *           The option to create an electrocardiogram
      */
     function Electrocardiogram(holder, option) {
         holder = holder || document.body;
@@ -11,6 +16,7 @@ define(function(require, exports, module) {
         this.$gridColor = 'green';
         this.$strokeColor = 'green';
         this.$dom = holder.ownerDocument;
+        this.$cellSize = option.cellSize || Electrocardiogram.CELL_SIZE;
         this.$canvas = this.$dom.createElement('CANVAS');
         this.$graphics = this.$canvas.getContext('2d');
         this.$canvas.width = option.width || holder.offsetWidth;
@@ -52,6 +58,24 @@ define(function(require, exports, module) {
     (function() {
 
         /**
+         * Returns the cell size
+         * 
+         * @return the cell size
+         */
+        this.getCellSize = function() {
+            return this.$cellSize;
+        };
+
+        /**
+         * Returns the block size
+         * 
+         * @return the block size
+         */
+        this.getBlockSize = function() {
+            return 5 * this.$cellSize;
+        };
+
+        /**
          * Returns the width of this diagram
          * 
          * @return the width of this diagram
@@ -80,6 +104,7 @@ define(function(require, exports, module) {
             var i = 0;
             var p0 = null;
             var p1 = null;
+            var cs = this.getCellSize();
             var lw = this.$graphics.lineWidth;
             var ss = this.$graphics.strokeStyle;
             var height = this.getHeight();
@@ -99,8 +124,7 @@ define(function(require, exports, module) {
 
                 this.$graphics.beginPath();
                 this.$graphics.lineWidth = Electrocardiogram.CURVE_WIDTH;
-                this.drawLine((i - 1) * Electrocardiogram.CELL_SIZE, -p0.pqrst,
-                        i * Electrocardiogram.CELL_SIZE, -p1.pqrst);
+                this.drawLine((i - 1) * cs, -p0.pqrst, i * cs, -p1.pqrst);
                 this.$graphics.closePath();
                 this.$graphics.stroke();
 
@@ -121,14 +145,16 @@ define(function(require, exports, module) {
             var y = 0;
             var w = this.getWidth() - 1;
             var h = this.getHeight() - 1;
+            var bs = this.getBlockSize();
+            var cs = this.getCellSize();
             var lw = this.$graphics.lineWidth;
             var ss = this.$graphics.strokeStyle;
 
             this.$graphics.strokeStyle = this.$gridColor;
 
-            for (var y = h; y >= 0; y -= Electrocardiogram.CELL_SIZE) {
+            for (var y = h; y >= 0; y -= cs) {
                 this.$graphics.beginPath();
-                this.$graphics.lineWidth = ((h - y) % Electrocardiogram.BLOCK_SIZE)
+                this.$graphics.lineWidth = ((h - y) % bs)
                         ? Electrocardiogram.CELL_WIDTH 
                         : Electrocardiogram.BLOCK_WIDTH;
                 this.drawLine(0, y, w, y);
@@ -136,9 +162,9 @@ define(function(require, exports, module) {
                 this.$graphics.stroke();
             }
 
-            for (var x = 0; x <= w; x += Electrocardiogram.CELL_SIZE) {
+            for (var x = 0; x <= w; x += cs) {
                 this.$graphics.beginPath();
-                this.$graphics.lineWidth = (x % Electrocardiogram.BLOCK_SIZE)
+                this.$graphics.lineWidth = (x % bs)
                         ? Electrocardiogram.CELL_WIDTH
                         : Electrocardiogram.BLOCK_WIDTH;
                 this.drawLine(x, 0, x, h);

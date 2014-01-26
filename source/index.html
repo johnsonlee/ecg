@@ -13,7 +13,12 @@
 
                 require(['Assets'], function(Assets) {
                     var data = (function() {
+                        var cs = ecg.getCellSize();
                         var pqrst = Assets.data['PQRST'].slice();
+
+                        for (var i = 0; i < pqrst.length; i++) {
+                            pqrst[i].pqrst *= cs * 0.01;
+                        }
 
                         for (var i = 0; i < ncell - 1; i++) {
                             pqrst.unshift(null);
