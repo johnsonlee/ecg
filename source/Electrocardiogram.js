@@ -7,6 +7,7 @@ define(function(require, exports, module) {
      *           HTML element
      * @param option
      *           The option to create an electrocardiogram
+     * @see http://en.wikipedia.org/wiki/Electrocardiogram
      */
     function Electrocardiogram(holder, option) {
         holder = holder || document.body;
@@ -17,6 +18,7 @@ define(function(require, exports, module) {
         this.$strokeColor = 'green';
         this.$dom = holder.ownerDocument;
         this.$cellSize = option.cellSize || Electrocardiogram.CELL_SIZE;
+        this.$samplingRate = option.samplingRate || Electrocardiogram.SAMPLING_RATE;
         this.$canvas = this.$dom.createElement('CANVAS');
         this.$graphics = this.$canvas.getContext('2d');
         this.$canvas.width = option.width || holder.offsetWidth;
@@ -51,6 +53,11 @@ define(function(require, exports, module) {
     Electrocardiogram.CURVE_WIDTH = 1;
 
     /**
+     * The number of samples per second (1/0.008)
+     */
+    Electrocardiogram.SAMPLING_RATE = 125;
+
+    /**
      * The frequency to update the curve
      */
     Electrocardiogram.FREQUENCY = 250;
@@ -76,23 +83,71 @@ define(function(require, exports, module) {
         };
 
         /**
-         * Returns the width of this diagram
+         * Returns the number of cells per period
          * 
-         * @return the width of this diagram
+         * @return the number of cells per period
+         */
+        this.getCellsPerPeriod = function() {
+            return Math.floor(this.getWidth() / this.getCellSize());
+        };
+
+        /**
+         * Returns the number of samples per cell
+         * 
+         * @return the number of samples per cell
+         */
+        this.getSamplesPerCell = function() {
+            return 0.04 * this.getSamplingRate();
+        };
+
+        /**
+         * Returns the number of samples per second
+         * 
+         * @return the number of samples per second
+         */
+        this.getSamplingRate = function() {
+            return this.$samplingRate;
+        };
+
+        /**
+         * Returns the number of samples per period
+         * 
+         * @return the number of samples per period
+         */
+        this.getSamplesPerPeriod = function() {
+            return Math.floor(0.04 * this.getSamplingRate() * (this.getWidth() / this.getCellSize()))
+        };
+
+        /**
+         * Returns the width of this electrocardiogram
+         * 
+         * @return the width of this electrocardiogram
          */
         this.getWidth = function() {
             return this.$graphics.canvas.width;
         };
 
         /**
-         * Returns the height of this diagram
+         * Returns the height of this electrocardiogram
          * 
-         * @return the height of this diagram
+         * @return the height of this electrocardiogram
          */
         this.getHeight = function() {
             return this.$graphics.canvas.height;
         };
 
+        /**
+         * Returns the period (seconds) of this electrocardiogram
+         * 
+         * @return the period of this electrocardiogram
+         */
+        this.getPeriod = function() {
+            return 0.04 * this.getWidth() / this.getCellSize();
+        };
+
+        /**
+         * Clear this electrocardiogram
+         */
         this.clear = function() {
             this.$graphics.clearRect(0, 0, this.getWidth(), this.getHeight());
         };
@@ -102,12 +157,16 @@ define(function(require, exports, module) {
          */
         this.drawCurve = function(data) {
             var i = 0;
+            var dt = null;
             var p0 = null;
             var p1 = null;
             var cs = this.getCellSize();
+            var sr = this.getSamplingRate();
             var lw = this.$graphics.lineWidth;
             var ss = this.$graphics.strokeStyle;
+            var delta = cs / (0.04 * sr);
             var height = this.getHeight();
+            var period = this.getPeriod();
 
             this.clear();
             this.drawGrid();
@@ -119,12 +178,15 @@ define(function(require, exports, module) {
                     break;
             }
 
+            p0.offset = (i - 1) * delta;
+
             while (i < data.length) {
                 p1 = data[i];
+                p1.offset = i * delta;
 
                 this.$graphics.beginPath();
                 this.$graphics.lineWidth = Electrocardiogram.CURVE_WIDTH;
-                this.drawLine((i - 1) * cs, -p0.pqrst, i * cs, -p1.pqrst);
+                this.drawLine(p0.offset, -p0.pqrst, p1.offset, -p1.pqrst);
                 this.$graphics.closePath();
                 this.$graphics.stroke();
 

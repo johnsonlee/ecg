@@ -9,7 +9,7 @@
 
             require(['Electrocardiogram'], function(Electrocardiogram) {
                 var ecg = new Electrocardiogram(document.body);
-                var ncell = Math.round(ecg.getWidth() / Electrocardiogram.CELL_SIZE);
+                var spp = ecg.getSamplesPerPeriod();
 
                 require(['Assets'], function(Assets) {
                     var data = (function() {
@@ -17,10 +17,12 @@
                         var pqrst = Assets.data['PQRST'].slice();
 
                         for (var i = 0; i < pqrst.length; i++) {
+                            // 1 (cell) = 0.1 (mV) = 100 (uV)
+                            // 1 (uV) = 0.01 (cell)
                             pqrst[i].pqrst *= cs * 0.01;
                         }
 
-                        for (var i = 0; i < ncell - 1; i++) {
+                        for (var i = 0; i < spp - 1; i++) {
                             pqrst.unshift(null);
                         }
 
@@ -29,7 +31,7 @@
 
                     var timer = window.setInterval(function() {
                         if (data.length) {
-                            ecg.drawCurve(data.slice(0, ncell));
+                            ecg.drawCurve(data.slice(0, spp));
                             data.shift();
                         } else {
                             window.clearInterval(timer);
